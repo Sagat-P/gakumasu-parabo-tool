@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>学マス パラメータ計算ツール（JavaScript版・UI強化）</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; max-width: 700px; }
+        .box { border: 1px solid #aaa; padding: 15px; border-radius: 10px; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ccc; padding: 6px; text-align: center; }
+        input { width: 70px; }
+        #calcBtn { width: 100%; padding: 12px; font-size: 18px; margin-top: 10px; }
+        h1 { font-size: 22px; }
+        h2 { font-size: 18px; }
+        @media (max-width: 600px) {
+            input { width: 60px; }
+        }
+    </style>
+</head>
+<body>
+
+<h1>NIAマスター パラメータボーナスを考える</h1>
+
+<div class="box">
+    <h2>パラメータボーナス（％）</h2>
+    <table>
+        <tr><th>Vo</th><th>Da</th><th>Vi</th></tr>
+        <tr>
+            <td><input id="b_vo" type="number" value="0"></td>
+            <td><input id="b_da" type="number" value="0"></td>
+            <td><input id="b_vi" type="number" value="0"></td>
+        </tr>
+    </table>
+</div>
+
+<div class="box">
+    <h2>オーディション数値（3回分）</h2>
+    <table>
+        <tr><th>回</th><th>Vo</th><th>Da</th><th>Vi</th></tr>
+        <tr>
+            <td>1 回目</td>
+            <td><input id="vo1" type="number" value="0"></td>
+            <td><input id="da1" type="number" value="0"></td>
+            <td><input id="vi1" type="number" value="0"></td>
+        </tr>
+        <tr>
+            <td>2 回目</td>
+            <td><input id="vo2" type="number" value="0"></td>
+            <td><input id="da2" type="number" value="0"></td>
+            <td><input id="vi2" type="number" value="0"></td>
+        </tr>
+        <tr>
+            <td>3 回目</td>
+            <td><input id="vo3" type="number" value="0"></td>
+            <td><input id="da3" type="number" value="0"></td>
+            <td><input id="vi3" type="number" value="0"></td>
+        </tr>
+    </table>
+</div>
+
+<button id="calcBtn">計算する</button>
+
+<h2>結果</h2>
+<div id="result"></div>
+
+<script>
+function lessonBonus(Bonus) {
+    const S = [100,100,120,120,150,150,150];
+    const t = Bonus[0] + Bonus[1] + Bonus[2];
+    return S.reduce((a,s) => a + (t*s)/3, 0);
+}
+
+function getN(id){ const v = Number(document.getElementById(id).value); return Number.isFinite(v)? v:0; }
+
+function calc(){
+    const Bonus = [ getN("b_vo")/100, getN("b_da")/100, getN("b_vi")/100 ];
+
+    const aud = [
+        [getN("vo1"), getN("da1"), getN("vi1")],
+        [getN("vo2"), getN("da2"), getN("vi2")],
+        [getN("vo3"), getN("da3"), getN("vi3")]
+    ];
+
+    let total_vo=0, total_da=0, total_vi=0;
+    let b_vo=0, b_da=0, b_vi=0;
+    let html="";
+
+    aud.forEach((vals,i)=>{
+        const base = vals;
+        const para = base.map((v,idx)=> v*Bonus[idx]);
+        const maji = base.map((v,idx)=> v*1.4 + para[idx]);
+
+        total_vo += maji[0]; total_da += maji[1]; total_vi += maji[2];
+        b_vo += para[0]; b_da += para[1]; b_vi += para[2];
+
+        html += `<h3>${i+1}回目</h3>`;
+        html += `合計上昇：Vo ${maji[0].toFixed(0)} / Da ${maji[1].toFixed(0)} / Vi ${maji[2].toFixed(0)}<br>`;
+        html += `ボーナス分：Vo ${para[0].toFixed(0)} / Da ${para[1].toFixed(0)} / Vi ${para[2].toFixed(0)}<br><br>`;
+    });
+
+    html += `<h3>全体まとめ</h3>`;
+    html += `合計上昇：Vo ${total_vo.toFixed(0)} / Da ${total_da.toFixed(0)} / Vi ${total_vi.toFixed(0)}<br>`;
+    html += `ボーナス合計：Vo ${b_vo.toFixed(0)} / Da ${b_da.toFixed(0)} / Vi ${b_vi.toFixed(0)}<br><br>`;
+
+    html += `<h3>SPレッスン期待値</h3>` + lessonBonus(Bonus).toFixed(0);
+
+    document.getElementById("result").innerHTML = html;
+}
+
+document.getElementById("calcBtn").addEventListener("click", calc);
+</script>
+
+</body>
+</html>
